@@ -36,7 +36,7 @@ def fifo(processos):
 	print '\n\nTurnaround: %d' % turnaround
 	# Gerar grafico
 
-def _sjf(process):
+def _sjf(process, size):
 	print "SJF"
 	turnaround = 0
 	index = 0
@@ -45,11 +45,14 @@ def _sjf(process):
 	first = process[0]
 	range_process = process[1:]
 	range_process.sort(key= lambda p: p['tempo_execucao'])
-	range_process.insert(0, first)
 
 	t = None
+	time_in = first['tempo_execucao'] - first['tempo_chegada']
+	turnaround =  time_in
+
 	for p in range_process:
-		turnaround += p['tempo_execucao'] - p['tempo_chegada']
+		time_in = p['tempo_execucao'] + time_in
+		turnaround += time_in + - p['tempo_chegada']
 		sleep(p['tempo_chegada'])
 		t = Processo(index, p['tempo_chegada'], p['tempo_execucao'])
 		t.setName(index)
@@ -57,7 +60,7 @@ def _sjf(process):
 		index += 1
 	t.join()
 
-	print '\n\nTurnaround: %d' % turnaround
+	print '\n\nTurnaround: ' + str(turnaround/float(size))
 
 if __name__ == "__main__":
 	
@@ -91,5 +94,5 @@ if __name__ == "__main__":
 				tempo_chegada  = int(input('Tempo de chegada: '))
 				tempo_execucao = int(input('Tempo de execucao: '))
 				processos.append({'tempo_chegada': tempo_chegada, 'tempo_execucao':tempo_execucao})
-			_sjf(processos)
+			_sjf(processos, quantidade_processos)
 			break
