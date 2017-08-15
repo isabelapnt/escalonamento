@@ -15,7 +15,6 @@ class Processo(Thread):
 	def run(self):
 		print '\nProcesso %d: Chegando em %d' % (self.id, self.tempo_chegada)
 		sleep(self.tempo_execucao)
-		# print 'Processo %d: Iniciando execucao em %d' % (self.id, self.tempo_chegada)
 		print '\nProcesso %d: Finalizou execucao em %d' % (self.id, self.tempo_execucao)
 
 
@@ -95,35 +94,44 @@ def _sjf(process):
 	t.join()
 
 	print '\n\nTurnaround: ' + str(turnaround/size)
-def rr(processos, tamanho, quantum, sobrecarga):
+
+
+def rr(processos, quantum, sobrecarga):
 	processos.sort(key= lambda p: p['tempo_chegada'])
+
+	time = 0
 	index = 0
 	turnaround = 0
 	fila = processos
-	time = 0
-	print 'iniciando o RR'
+	tamanho = len(processos)
+	
+	print '\n\niniciando o RR'
+	
 	while (fila):
-		time += quantum
-		print '------------------------- RR processo %d ----------------------- \n' %(index)
+		p = fila.pop()
+		time += p['tempo_execucao']
+		# print '------------------------- RR processo %d ----------------------- \n' % (index)
 		t = None
-		p = fila.pop(0)
 		p['tempo_execucao'] -= quantum
+		sleep(p['tempo_chegada'])
 		t = Processo(index, p['tempo_chegada'], p['tempo_execucao'])
 		t.setName(index)
 		t.start()
 		index += 1
-		sleep(p['tempo_chegada'])
 		if (p['tempo_execucao'] > 0):
 			fila.append(p)
-			print '\n<<<<<<<<<<<< Processo: %d volta para fila >>>>>>>>>>>>>>>' %(index)
+			# print '\n<<<<<<<<<<<< Processo: %d volta para fila >>>>>>>>>>>>>>>' %(index)
 		else:
 			turnaround += (time - p['tempo_chegada'])
-			print '\n<<<<<<<<<<<< Processo: %d sai da fila >>>>>>>>>>>>>>>' %(index)
-		if (index == tamanho): index = 0
-
-		t.join()
+			# print '\n<<<<<<<<<<<< Processo: %d sai da fila >>>>>>>>>>>>>>>' %(index)
+		
+		if (index == tamanho):
+			index = 0
+	
 		print '\n turnaround: %d \n time: %d ' % (turnaround, time)
-	print '\n turnaround FINAL %f: ' % (turnaround/tamanho)
+
+	t.join()
+	print '\n turnaround FINAL: '+ (turnaround/tamanho)
 
 
 
@@ -174,5 +182,6 @@ if __name__ == "__main__":
 				tempo_chegada  = int(input('Tempo de chegada: '))
 				tempo_execucao = int(input('Tempo de execucao: '))
 				processos.append({'tempo_chegada': tempo_chegada, 'tempo_execucao':tempo_execucao})
-			rr(processos, quantidade_processos, quantum, sobrecarga)
+
+			rr(processos, quantum, sobrecarga)
 			break
