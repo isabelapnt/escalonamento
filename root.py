@@ -95,6 +95,37 @@ def _sjf(process):
 	t.join()
 
 	print '\n\nTurnaround: ' + str(turnaround/size)
+def rr(processos, tamanho, quantum, sobrecarga):
+	processos.sort(key= lambda p: p['tempo_chegada'])
+	index = 0
+	turnaround = 0
+	fila = processos
+	time = 0
+	print 'iniciando o RR'
+	while (fila):
+		time += quantum
+		print '------------------------- RR processo %d ----------------------- \n' %(index)
+		t = None
+		p = fila.pop(0)
+		p['tempo_execucao'] -= quantum
+		t = Processo(index, p['tempo_chegada'], p['tempo_execucao'])
+		t.setName(index)
+		t.start()
+		index += 1
+		sleep(p['tempo_chegada'])
+		if (p['tempo_execucao'] > 0):
+			fila.append(p)
+			print '\n<<<<<<<<<<<< Processo: %d volta para fila >>>>>>>>>>>>>>>' %(index)
+		else:
+			turnaround += (time - p['tempo_chegada'])
+			print '\n<<<<<<<<<<<< Processo: %d sai da fila >>>>>>>>>>>>>>>' %(index)
+		if (index == tamanho): index = 0
+
+		t.join()
+		print '\n turnaround: %d \n time: %d ' % (turnaround, time)
+	print '\n turnaround FINAL %f: ' % (turnaround/tamanho)
+
+
 
 if __name__ == "__main__":
 	
@@ -132,4 +163,16 @@ if __name__ == "__main__":
 				tempo_execucao = int(input('Tempo de execucao: '))
 				processos.append({'tempo_chegada': tempo_chegada, 'tempo_execucao':tempo_execucao})
 			_sjf(processos)
+			break
+
+		if opcao_algoritmo == 3:
+			processos = list()
+			sobrecarga = int(input('Sobrecarga: '))
+			quantum = int(input('Quantum: '))
+			for i in range(0, quantidade_processos):
+				print '\nProcesso %d:' % i
+				tempo_chegada  = int(input('Tempo de chegada: '))
+				tempo_execucao = int(input('Tempo de execucao: '))
+				processos.append({'tempo_chegada': tempo_chegada, 'tempo_execucao':tempo_execucao})
+			rr(processos, quantidade_processos, quantum, sobrecarga)
 			break
