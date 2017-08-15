@@ -1,3 +1,4 @@
+from __future__ import division
 from time import sleep
 from threading import Thread
 
@@ -60,7 +61,7 @@ def _sjf(process, size):
 		index += 1
 	t.join()
 
-	print '\n\nTurnaround: ' + str(turnaround/float(size))
+	print '\n\nTurnaround: ' + str(turnaround/size)
 
 if __name__ == "__main__":
 	
