@@ -99,6 +99,42 @@ def _round__robin(process, size, quantum, sobrecarga):
 	print '\n\nTurnaround: ' + str(turnaround/size)
 
 
+
+
+
+
+
+
+
+
+
+def _prioridade(process, size):
+	index = 0
+	time_in = 0 
+	turnaround = 0
+
+	process.sort(key= lambda p: p['tempo_chegada'])
+	first = process[0]
+	range_process = process[1:]
+	range_process.sort(key= lambda p: p['tempo_prioridade'])
+	range_process.insert(0, first)
+
+	t = None
+
+	for p in range_process:
+		time_in = p['tempo_execucao'] + time_in
+		turnaround += time_in + - p['tempo_chegada']
+		sleep(p['tempo_chegada'])
+		t = Processo(index, p['tempo_chegada'], p['tempo_execucao'])
+		t.setName(index)
+		t.start()
+		index += 1
+
+	t.join()
+
+	print '\n\nTurnaround: ' + str(turnaround/float(size))
+
+
 def _edf():
 	pass
 
@@ -150,6 +186,16 @@ if __name__ == "__main__":
 
 			_round__robin(processos, quantidade_processos, quantum, sobrecarga)
 			break
+		if opcao_algoritmo == 4:
+			processos = list()
+			for i in range(0, quantidade_processos):
+				print '\nProcesso %d:' % i
+				tempo_chegada  = int(input('Tempo de chegada: '))
+				tempo_execucao = int(input('Tempo de execucao: '))
+				tempo_prioridade = int(input('Prioridade: '))
+				processos.append({'tempo_chegada': tempo_chegada, 'tempo_execucao':tempo_execucao, 'tempo_prioridade': tempo_prioridade})
+			_prioridade(processos, quantidade_processos)
+			break
 
 		if opcao_algoritmo == 4:
 			arquivo = open('resultados.json', 'w')
@@ -159,5 +205,6 @@ if __name__ == "__main__":
 			json.dump(saida, arquivo, indent=4)
 			webbrowser.open_new_tab("templates/grafico.html")
 			break
+		
 		else:
 			print "Comando Invalido!"
