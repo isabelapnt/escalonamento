@@ -1,0 +1,59 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Algoritmos de Escalonamento</title>
+
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+    <script type="text/javascript" src="jquery.js"></script>
+
+    <script>
+    	$.getJSON( "execucoes.json", function( data ) {
+
+    		var tempo_limite = 0;
+    		for (var i = 0; i < data.length; i++) {
+    			if (data[i].tempo_fim_execucao > tempo_limite) {
+    				tempo_limite = data[i].tempo_fim_execucao
+    			}
+    		}
+
+    		console.log(tempo_limite)
+
+    		var table = '<table border="1" id="table" padding="20px">';
+    		for (var i = 0; i < data.length; i++) {
+    			table += '<tr padding="20px">';
+				table += '<td bgcolor="#1E90FF" padding="20px">'+data[i].id+'</td>';
+    			for (var tempo_corrente = 0; tempo_corrente <= tempo_limite; tempo_corrente++) {
+    				cood = i+'x'+tempo_corrente; 
+    				table += '<td id="'+cood+'" padding="20px">'+tempo_corrente+'</td>';    				
+    			}
+    			table += "</tr>";
+    		}
+
+		  	$("body").html(table);
+
+    		for (var i = 0; i < data.length; i++) {
+    			for (var tempo_corrente = 0; tempo_corrente <= tempo_limite; tempo_corrente++) {
+    				if (data[i].tempo_chegada <= tempo_corrente && tempo_corrente <= data[i].tempo_inicio_execucao) {		
+	    				cood = i+'x'+tempo_corrente; 
+    					$("#"+cood).attr("bgcolor", "#FFD700");
+    				}
+
+					if (data[i].tempo_inicio_execucao <= tempo_corrente && tempo_corrente <= data[i].tempo_fim_execucao) {		
+	    				cood = i+'x'+tempo_corrente; 
+    					$("#"+cood).attr("bgcolor", "#FF0000");
+    				}
+    				 
+    			}
+    		}		    		
+		  
+		});
+
+    </script>
+
+  </head>
+  <body>
+  	<div class="text-center">
+  		<h2>Gráfico</h2>
+	</div>
+  </body>
+</html>

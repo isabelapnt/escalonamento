@@ -13,11 +13,22 @@ class Processo(Thread):
 		self.id = id
 		self.tempo_chegada = tempo_chegada
 		self.tempo_execucao = tempo_execucao
+		
+
+		self.tempo_inicio_execucao = 0
+		self.tempo_fim_execucao = 0
  
 	def run(self):
 		print '\nProcesso %d: Chegando em %d' % (self.id, self.tempo_chegada)
 		sleep(self.tempo_execucao)
 		print '\nProcesso %d: Finalizou execucao em %d' % (self.id, self.tempo_execucao)
+
+
+def gerar_grafico(execucoes):
+	with open("execucoes.json", 'w') as fp:
+		json.dump(execucoes, fp, indent=4)
+	
+	webbrowser.open_new_tab("file://" + os.getcwd()+"/grafico.html")
 
 
 
@@ -30,18 +41,39 @@ def fifo(processos):
 	print 'Comecando execucao!\n'
 
 	t = None
+	json_execucoes = []
+
+	clock_inicio_execucao = 0
+	p_anterior = None
 	for p in processos:
 		time_in = p['tempo_execucao'] + time_in
 		turnaround += (time_in - p['tempo_chegada'])
 		sleep(p['tempo_chegada'])
 
+		if p_anterior == None:
+			clock_inicio_execucao = p['tempo_chegada']
+		else:
+			clock_inicio_execucao += p_anterior['tempo_execucao']
+
+		json_execucoes.append({
+			'id': p['id'],
+			'tempo_chegada': p['tempo_chegada'], 
+			'tempo_inicio_execucao': clock_inicio_execucao,
+			'tempo_fim_execucao': time_in
+		})
+
 		t = Processo(p['id'], p['tempo_chegada'], time_in)
 		t.setName(p['id'])
 		t.start()
+		p_anterior = p
 	t.join()
 	
 	print '\n\nTurnaround: ' + str(turnaround / size )
 	# Gerar grafico
+	# print json_execucoes
+	# print json.dumps(json_execucoes)
+	gerar_grafico(json_execucoes)
+
 
 
 def _sjf(process, size):
@@ -206,7 +238,7 @@ def _edf(process, size, quantum, sobrecarga):
 
 
 if __name__ == "__main__":
-	
+
 	opcao_algoritmo = input("""
 	Informe qual o algoritmo desejado:
 		1 - FIFO
