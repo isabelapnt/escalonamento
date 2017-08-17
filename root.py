@@ -22,7 +22,6 @@ class Processo(Thread):
 
 
 def fifo(processos):
-	index = 0
 	time_in = 0 
 	turnaround = 0
 	size = len(processos)
@@ -33,12 +32,12 @@ def fifo(processos):
 	t = None
 	for p in processos:
 		time_in = p['tempo_execucao'] + time_in
-		turnaround += time_in - p['tempo_chegada']
+		turnaround += (time_in - p['tempo_chegada'])
 		sleep(p['tempo_chegada'])
-		t = Processo(index, p['tempo_chegada'], time_in)
-		t.setName(index)
+
+		t = Processo(p['id'], p['tempo_chegada'], time_in)
+		t.setName(p['id'])
 		t.start()
-		index += 1
 	t.join()
 	
 	print '\n\nTurnaround: ' + str(turnaround / size )
@@ -46,7 +45,6 @@ def fifo(processos):
 
 
 def _sjf(process, size):
-	index = 0
 	time_in = 0 
 	turnaround = 0
 
@@ -62,10 +60,9 @@ def _sjf(process, size):
 		time_in = p['tempo_execucao'] + time_in
 		turnaround += time_in - p['tempo_chegada']
 		sleep(p['tempo_chegada'])
-		t = Processo(index, p['tempo_chegada'], p['tempo_execucao'])
-		t.setName(index)
+		t = Processo(p['id'], p['tempo_chegada'], p['tempo_execucao'])
+		t.setName(p['id'])
 		t.start()
-		index += 1
 
 	t.join()
 
@@ -73,7 +70,6 @@ def _sjf(process, size):
 
 
 def _round__robin(process, size, quantum, sobrecarga):
-	index = 0
 	time_in = 0 
 	turnaround = 0
 	time_split = 0
@@ -97,10 +93,9 @@ def _round__robin(process, size, quantum, sobrecarga):
 
 		turnaround += time_in - p['tempo_chegada']
 		sleep(p['tempo_chegada'])
-		t = Processo(index, p['tempo_chegada'], p['tempo_execucao'])
-		t.setName(index)
+		t = Processo(p['id'], p['tempo_chegada'], p['tempo_execucao'])
+		t.setName(p['id'])
 		t.start()
-		index += 1
 
 	t.join()
 
@@ -108,7 +103,6 @@ def _round__robin(process, size, quantum, sobrecarga):
 
 
 def _prioridade(process, size):
-	index = 0
 	time_in = 0 
 	turnaround = 0
 
@@ -124,10 +118,9 @@ def _prioridade(process, size):
 		time_in = p['tempo_execucao'] + time_in
 		turnaround += time_in + - p['tempo_chegada']
 		sleep(p['tempo_chegada'])
-		t = Processo(index, p['tempo_chegada'], p['tempo_execucao'])
-		t.setName(index)
+		t = Processo(p['id'], p['tempo_chegada'], p['tempo_execucao'])
+		t.setName(p['id'])
 		t.start()
-		index += 1
 
 	t.join()
 
@@ -173,8 +166,6 @@ def add_to_process(process, time_in, result):
 
 
 def _edf(process, size, quantum, sobrecarga):
-
-	index = 0
 	time_in = 0 
 	turnaround = 0
 
@@ -196,7 +187,6 @@ def _edf(process, size, quantum, sobrecarga):
 		t = Processo(p['id'], p['tempo_chegada'], time_in)
 		t.setName(p['id'])
 		t.start()
-		index += 1
 		
 		p['tempo_execucao'] = p['tempo_execucao'] - quantum
 		result = add_to_process(p, time_in, result)
@@ -204,7 +194,9 @@ def _edf(process, size, quantum, sobrecarga):
 		p = get_lower_priority(range_process)
 		if not p:
 			break
+
 	t.join()
+
 	for p in result:
 		turnaround += p['time_in'] - p['time_exc']
 
@@ -229,36 +221,48 @@ if __name__ == "__main__":
 	print 'Informe os dados dos processos:'
 	while 0 < opcao_algoritmo  < 6:
 
-		if opcao_algoritmo == 1: #FIFO
+		#FIFO
+		if opcao_algoritmo == 1:
 			processos = list()
 			for i in range(0, quantidade_processos):
 				print '\nProcesso %d:' % i
-				tempo_chegada  = int(input('Tempo de chegada: '))
-				tempo_execucao = int(input('Tempo de execucao: '))
-				processos.append({'tempo_chegada': tempo_chegada, 'tempo_execucao':tempo_execucao})
-			# print processos
+				p = {
+					'id': i,
+					'tempo_chegada':  int(input('Tempo de chegada: ')),
+					'tempo_execucao': int(input('Tempo de execucao: '))
+				}				
+				processos.append(p)
+
 			fifo(processos)
 			break
 
 
-		if opcao_algoritmo == 2: #SJF
+		#SJF
+		if opcao_algoritmo == 2:
 			processos = list()
 			for i in range(0, quantidade_processos):
 				print '\nProcesso %d:' % i
-				tempo_chegada  = int(input('Tempo de chegada: '))
-				tempo_execucao = int(input('Tempo de execucao: '))
-				processos.append({'tempo_chegada': tempo_chegada, 'tempo_execucao':tempo_execucao})
+				p = {
+					'id': i,
+					'tempo_chegada':  int(input('Tempo de chegada: ')),
+					'tempo_execucao': int(input('Tempo de execucao: '))
+				}
+				processos.append(p)
 			_sjf(processos, quantidade_processos)
 			break
 
 
-		if opcao_algoritmo == 3: #Round Robin
+		#Round Robin
+		if opcao_algoritmo == 3:
 			processos = list()
 			for i in range(0, quantidade_processos):
 				print '\nProcesso %d:' % i
-				tempo_chegada  = int(input('Tempo de chegada: '))
-				tempo_execucao = int(input('Tempo de execucao: '))
-				processos.append({'tempo_chegada': tempo_chegada, 'tempo_execucao':tempo_execucao})
+				p = {
+					'id': i,
+					'tempo_chegada':  int(input('Tempo de chegada: ')),
+					'tempo_execucao': int(input('Tempo de execucao: '))
+				}
+				processos.append(p)
 			quantum = int(input('Qual o valor do Quantum?'))
 			sobrecarga = int(input('Qual o valor da Sobrecarga?'))
 
@@ -266,28 +270,36 @@ if __name__ == "__main__":
 			break
 
 
-		if opcao_algoritmo == 4: #Prioridade
+		#Prioridade
+		if opcao_algoritmo == 4:
 			processos = list()
 			for i in range(0, quantidade_processos):
 				print '\nProcesso %d:' % i
-				tempo_chegada  = int(input('Tempo de chegada: '))
-				tempo_execucao = int(input('Tempo de execucao: '))
-				tempo_prioridade = int(input('Prioridade: '))
-				processos.append({'tempo_chegada': tempo_chegada, 'tempo_execucao':tempo_execucao, 'tempo_prioridade': tempo_prioridade})
+				p = {
+					'id': i,
+					'tempo_chegada':    int(input('Tempo de chegada: ')),
+					'tempo_execucao':   int(input('Tempo de execucao: ')),
+					'tempo_prioridade': int(input('Prioridade: '))
+				}
+				processos.append(p)
 			_prioridade(processos, quantidade_processos)
 			break
 
 
-		if opcao_algoritmo == 5: #EDF
+		#EDF
+		if opcao_algoritmo == 5:
 			processos = list()
-			id = 0
 			for i in range(0, quantidade_processos):
 				print '\nProcesso %d:' % i
-				tempo_chegada  = int(input('Tempo de chegada: '))
-				tempo_execucao = int(input('Tempo de execucao: '))
-				tempo_prioridade = int(input('Prioridade: '))
-				processos.append({'id': id,'tempo_chegada': tempo_chegada, 'tempo_execucao':tempo_execucao, 'tempo_prioridade': tempo_prioridade})
-				id = id + 1
+				
+				p = {
+					'id': i,
+					'tempo_chegada':    int(input('Tempo de chegada: ')),
+					'tempo_execucao':   int(input('Tempo de execucao: ')),
+					'tempo_prioridade': int(input('Prioridade: '))
+				}
+				processos.append(p)
+
 			quantum = int(input('Qual o valor do Quantum?'))
 			sobrecarga = int(input('Qual o valor da Sobrecarga?'))
 			_edf(processos, quantidade_processos,quantum, sobrecarga)
