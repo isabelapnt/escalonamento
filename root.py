@@ -1,10 +1,13 @@
-# from __future__ import division
+from __future__ import division
 from time import sleep
 from threading import Thread
 import json 
 import webbrowser
+import os
+
 
 class Processo(Thread):
+
 	def __init__(self, id, tempo_chegada, tempo_execucao):
 		Thread.__init__(self)
 		self.id = id
@@ -14,29 +17,33 @@ class Processo(Thread):
 	def run(self):
 		print '\nProcesso %d: Chegando em %d' % (self.id, self.tempo_chegada)
 		sleep(self.tempo_execucao)
-		# print 'Processo %d: Iniciando execucao em %d' % (self.id, self.tempo_chegada)
 		print '\nProcesso %d: Finalizou execucao em %d' % (self.id, self.tempo_execucao)
 
 
 
 def fifo(processos):
-	turnaround = 0
-	processos.sort(key= lambda p: p['tempo_chegada'])
 	index = 0
+	time_in = 0 
+	turnaround = 0
+	size = len(processos)
+	
+	processos.sort(key= lambda p: p['tempo_chegada'])
 	print 'Comecando execucao!\n'
 
 	t = None
 	for p in processos:
-		turnaround += p['tempo_execucao'] - p['tempo_chegada']
+		time_in = p['tempo_execucao'] + time_in
+		turnaround += time_in - p['tempo_chegada']
 		sleep(p['tempo_chegada'])
-		t = Processo(index, p['tempo_chegada'], p['tempo_execucao'])
+		t = Processo(index, p['tempo_chegada'], time_in)
 		t.setName(index)
 		t.start()
 		index += 1
 	t.join()
 	
-	print '\n\nTurnaround: %d' % turnaround
+	print '\n\nTurnaround: ' + str(turnaround / size )
 	# Gerar grafico
+
 
 def _sjf(process, size):
 	index = 0
@@ -53,7 +60,7 @@ def _sjf(process, size):
 
 	for p in range_process:
 		time_in = p['tempo_execucao'] + time_in
-		turnaround += time_in + - p['tempo_chegada']
+		turnaround += time_in - p['tempo_chegada']
 		sleep(p['tempo_chegada'])
 		t = Processo(index, p['tempo_chegada'], p['tempo_execucao'])
 		t.setName(index)
@@ -63,6 +70,7 @@ def _sjf(process, size):
 	t.join()
 
 	print '\n\nTurnaround: ' + str(turnaround/float(size))
+
 
 def _round__robin(process, size, quantum, sobrecarga):
 	index = 0
@@ -76,7 +84,7 @@ def _round__robin(process, size, quantum, sobrecarga):
 	t = None
 
 	for p in processos:
-		time_split_div = p['tempo_execucao'] / quantum
+		time_split_div = p['tempo_execucao'] // quantum
 		time_split_mod = p['tempo_execucao'] % quantum
 
 		if time_split_div == 0:
@@ -97,6 +105,7 @@ def _round__robin(process, size, quantum, sobrecarga):
 	t.join()
 
 	print '\n\nTurnaround: ' + str(turnaround/size)
+
 
 def _prioridade(process, size):
 	index = 0
@@ -124,6 +133,7 @@ def _prioridade(process, size):
 
 	print '\n\nTurnaround: ' + str(turnaround/float(size))
 
+
 def get_lower_priority(process):
 
 	if not process:
@@ -138,17 +148,21 @@ def get_lower_priority(process):
 
 	return chosen
 
+
 def remove_process(process):
 
 	for p in process:
 		if p['tempo_execucao'] <=0 :
 			process.remove(p)
 	return process
+
+
 def initialize_list_result(process):
 	result = []
 	for p in process:
 		result.append({'id': p['id'], 'time_exc': p['tempo_chegada'], 'time_in': 0})
 	return result
+
 
 def add_to_process(process, time_in, result):	
 	for p in result:
@@ -156,6 +170,7 @@ def add_to_process(process, time_in, result):
 			p['time_in'] =  time_in
 			break
 	return result
+
 
 def _edf(process, size, quantum, sobrecarga):
 
@@ -178,8 +193,8 @@ def _edf(process, size, quantum, sobrecarga):
 			time_in = p['tempo_execucao'] + time_in
 
 		sleep(p['tempo_chegada'])
-		t = Processo(index, p['tempo_chegada'], time_in)
-		t.setName(index)
+		t = Processo(p['id'], p['tempo_chegada'], time_in)
+		t.setName(p['id'])
 		t.start()
 		index += 1
 		
@@ -194,6 +209,10 @@ def _edf(process, size, quantum, sobrecarga):
 		turnaround += p['time_in'] - p['time_exc']
 
 	print '\n\nTurnaround: ' + str(turnaround/size)
+
+
+
+
 if __name__ == "__main__":
 	
 	opcao_algoritmo = input("""
@@ -209,6 +228,7 @@ if __name__ == "__main__":
 
 	print 'Informe os dados dos processos:'
 	while 0 < opcao_algoritmo  < 6:
+
 		if opcao_algoritmo == 1: #FIFO
 			processos = list()
 			for i in range(0, quantidade_processos):
@@ -216,9 +236,10 @@ if __name__ == "__main__":
 				tempo_chegada  = int(input('Tempo de chegada: '))
 				tempo_execucao = int(input('Tempo de execucao: '))
 				processos.append({'tempo_chegada': tempo_chegada, 'tempo_execucao':tempo_execucao})
-			print processos
-			# fifo(processos)
+			# print processos
+			fifo(processos)
 			break
+
 
 		if opcao_algoritmo == 2: #SJF
 			processos = list()
@@ -229,6 +250,7 @@ if __name__ == "__main__":
 				processos.append({'tempo_chegada': tempo_chegada, 'tempo_execucao':tempo_execucao})
 			_sjf(processos, quantidade_processos)
 			break
+
 
 		if opcao_algoritmo == 3: #Round Robin
 			processos = list()
@@ -242,6 +264,8 @@ if __name__ == "__main__":
 
 			_round__robin(processos, quantidade_processos, quantum, sobrecarga)
 			break
+
+
 		if opcao_algoritmo == 4: #Prioridade
 			processos = list()
 			for i in range(0, quantidade_processos):
@@ -252,6 +276,7 @@ if __name__ == "__main__":
 				processos.append({'tempo_chegada': tempo_chegada, 'tempo_execucao':tempo_execucao, 'tempo_prioridade': tempo_prioridade})
 			_prioridade(processos, quantidade_processos)
 			break
+
 
 		if opcao_algoritmo == 5: #EDF
 			processos = list()
@@ -268,13 +293,15 @@ if __name__ == "__main__":
 			_edf(processos, quantidade_processos,quantum, sobrecarga)
 			break
 
+
 		if opcao_algoritmo == 6:
 			arquivo = open('resultados.json', 'w')
 			process = [{'tempo_execucao': 4, 'tempo_chegada': 0}, {'tempo_execucao': 2, 'tempo_chegada': 2}, {'tempo_execucao': 1, 'tempo_chegada': 4}, {'tempo_execucao': 3, 'tempo_chegada': 6}]
 			time_in = 4
 			saida = {'labels': ["FIFO"],'datasets': [{'data': [_sjf(process, time_in)]}]}
 			json.dump(saida, arquivo, indent=4)
-			webbrowser.open_new_tab("templates/grafico.html")
+			
+			webbrowser.open_new_tab("file://" + os.getcwd()+"/templates/grafico.html")
 			break
 		
 		else:
