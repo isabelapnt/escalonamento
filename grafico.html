@@ -33,13 +33,13 @@
 
     		for (var i = 0; i < data.length; i++) {
     			for (var tempo_corrente = 0; tempo_corrente <= tempo_limite; tempo_corrente++) {
+
+    				cood = i+'x'+tempo_corrente; 
     				if (data[i].tempo_chegada <= tempo_corrente && tempo_corrente <= data[i].tempo_inicio_execucao) {		
-	    				cood = i+'x'+tempo_corrente; 
     					$("#"+cood).attr("bgcolor", "#FFD700");
     				}
 
-					if (data[i].tempo_inicio_execucao <= tempo_corrente && tempo_corrente <= data[i].tempo_fim_execucao) {		
-	    				cood = i+'x'+tempo_corrente; 
+					if (data[i].tempo_inicio_execucao <= tempo_corrente && tempo_corrente <= data[i].tempo_fim_execucao) {
     					$("#"+cood).attr("bgcolor", "#FF0000");
     				}
     				 

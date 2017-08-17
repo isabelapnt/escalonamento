@@ -69,9 +69,7 @@ def fifo(processos):
 	t.join()
 	
 	print '\n\nTurnaround: ' + str(turnaround / size )
-	# Gerar grafico
-	# print json_execucoes
-	# print json.dumps(json_execucoes)
+	
 	gerar_grafico(json_execucoes)
 
 
@@ -86,19 +84,42 @@ def _sjf(process, size):
 	range_process.sort(key= lambda p: p['tempo_execucao'])
 	range_process.insert(0, first)
 	
+	json_execucoes = []
+
+	clock_inicio_execucao = 0
+	p_anterior = None
+
 	t = None
 
 	for p in range_process:
 		time_in = p['tempo_execucao'] + time_in
 		turnaround += time_in - p['tempo_chegada']
 		sleep(p['tempo_chegada'])
+
+		if p_anterior == None:
+			clock_inicio_execucao = p['tempo_chegada']
+		else:
+			clock_inicio_execucao += p_anterior['tempo_execucao']
+
+		json_execucoes.append({
+			'id': p['id'],
+			'tempo_chegada': p['tempo_chegada'], 
+			'tempo_inicio_execucao': clock_inicio_execucao,
+			'tempo_fim_execucao': time_in
+		})
+
 		t = Processo(p['id'], p['tempo_chegada'], p['tempo_execucao'])
 		t.setName(p['id'])
 		t.start()
+		p_anterior = p
+		
 
 	t.join()
 
 	print '\n\nTurnaround: ' + str(turnaround/float(size))
+
+	json_execucoes.sort(key= lambda p: p['id'])
+	gerar_grafico(json_execucoes)
 
 
 def _round__robin(process, size, quantum, sobrecarga):
